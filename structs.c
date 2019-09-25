@@ -70,9 +70,62 @@ void test_allocate_and_fill_struct_with_string_members() {
   free(pair02);
 }
 
+void test_allocate_and_fill_struct_with_array_member() {
+  StringPair items[] = {
+      {"key_1", "val_1"}, {"key_02", "val_02"}, {"key_003", "val_003"}};
+  size_t count = sizeof(items) / sizeof(*items);
+  size_t size;
+
+  /* compute size for the target struct */
+  size = sizeof(StringPairList);
+  for (size_t i = 0; i < count; i++) {
+    size += sizeof(StringPair);         /* size of StringPair struct*/
+    size += strlen(items[i].key) + 1;   /* size of StringPair key */
+    size += strlen(items[i].value) + 1; /* size of StringPair value*/
+  }
+
+  /* allocate and fill the target struct by pointer */
+  StringPairList *dict = malloc(size);
+  StringPairList *ptr = dict;
+  dict->count = count;
+  dict->items = (StringPair *)(ptr + offsetof(StringPairList, items));
+  ptr += sizeof(StringPairList);
+  for (size_t i = 0; i < count; i++) {
+    ptr += sizeof(StringPair);
+    dict->items[i].key = strcpy((char *)ptr, items[i].key);
+    ptr += strlen(items[i].key) + 1;
+    dict->items[i].value = strcpy((char *)ptr, items[i].value);
+    ptr += strlen(items[i].value) + 1;
+  }
+
+  if (dict->count != 3) {
+    fail("dict->count != 3");
+  }
+  if (strcmp(dict->items[0].key, "key_1")) {
+    fail(dict->items[0].key);
+  }
+  if (strcmp(dict->items[0].value, "val_1")) {
+    fail(dict->items[0].value);
+  }
+  if (strcmp(dict->items[1].key, "key_02")) {
+    fail(dict->items[1].key);
+  }
+  if (strcmp(dict->items[1].value, "val_02")) {
+    fail(dict->items[1].value);
+  }
+  if (strcmp(dict->items[2].key, "key_003")) {
+    fail(dict->items[2].key);
+  }
+  if (strcmp(dict->items[2].value, "val_003")) {
+    fail(dict->items[2].value);
+  }
+  free(dict);
+}
+
 int main(void) {
   test_init_struct_with_array_member();
   test_allocate_and_fill_struct_with_string_members();
+  test_allocate_and_fill_struct_with_array_member();
 
   fprintf(stdout, "\nall tests passed");
   return 0;
