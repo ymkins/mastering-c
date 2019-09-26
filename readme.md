@@ -1,6 +1,13 @@
 # Mastering C
 
 
+## Tasks
+
+* Allocate and fill struct with string members.
+* Allocate and fill struct with array member.
+* Serialize struct with string, enum, and array members.
+
+
 ## Requirements
 
 * `libjansson-devel` (`libjansson-dev` in Debian) library package.
