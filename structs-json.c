@@ -167,7 +167,7 @@ void test_decodeCard() {
   }
 
   free(card);
-  card = decodeCard(card_str01);
+  card = decodeCard(card_str02);
 
   if (!card) {
     fail("!card");
@@ -236,6 +236,7 @@ void test_encodeCard() {
 
 int main(void) {
   test_encodeCard();
+  test_decodeCard();
 
   fprintf(stdout, "\nall tests passed");
   return 0;
