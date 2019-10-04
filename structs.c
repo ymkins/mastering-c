@@ -8,6 +8,12 @@
 
 #include "util.h"
 
+#ifndef NUL_TERM_LEN
+/* Size of a NUL-termination byte. Generally useful for documenting the meaning
+ * of +1 and -1 length adjustments having to do with such bytes. */
+#define NUL_TERM_LEN 1 /*  sizeof('\0') */
+#endif                 /* NUL_TERM_LEN */
+
 typedef struct {
   char *key, *value;
 } StringPair;
@@ -41,9 +47,9 @@ void test_allocate_and_fill_struct_with_string_members() {
   StringPair *pair01 = &pair;
 
   size_t size, offset;
-  size = sizeof(StringPair)           /* size of StringPair struct*/
-         + strlen(pair01->key) + 1    /* size of StringPair key */
-         + strlen(pair01->value) + 1; /* size of StringPair value*/
+  size = sizeof(StringPair);                    /* size of StringPair struct*/
+  size += strlen(pair01->key) + NUL_TERM_LEN;   /* size of StringPair key */
+  size += strlen(pair01->value) + NUL_TERM_LEN; /* size of StringPair value*/
 
   printf(
       "\n_allocate_and_fill_struct_with_string_members: %ld : %ld : %ld : %ld",
@@ -56,7 +62,7 @@ void test_allocate_and_fill_struct_with_string_members() {
 
   offset = sizeof(StringPair);
   pair02->key = strcpy((char *)(pair02 + offset), pair01->key);
-  offset = sizeof(StringPair) + strlen(pair01->key) + 1;
+  offset = sizeof(StringPair) + strlen(pair01->key) + NUL_TERM_LEN;
   pair02->value = strcpy((char *)(pair02 + offset), pair01->value);
   printf("\n_allocate_and_fill_struct_with_string_members: %s : %s",
          pair02->key, pair02->value);
@@ -79,9 +85,9 @@ void test_allocate_and_fill_struct_with_array_member() {
   /* compute size for the target struct */
   size = sizeof(StringPairList);
   for (size_t i = 0; i < count; i++) {
-    size += sizeof(StringPair);         /* size of StringPair struct*/
-    size += strlen(items[i].key) + 1;   /* size of StringPair key */
-    size += strlen(items[i].value) + 1; /* size of StringPair value*/
+    size += sizeof(StringPair);                  /* size of StringPair struct*/
+    size += strlen(items[i].key) + NUL_TERM_LEN; /* size of StringPair key */
+    size += strlen(items[i].value) + NUL_TERM_LEN; /* size of StringPair value*/
   }
 
   /* allocate and fill the target struct by pointer */
@@ -93,9 +99,9 @@ void test_allocate_and_fill_struct_with_array_member() {
   for (size_t i = 0; i < count; i++) {
     ptr += sizeof(StringPair);
     dict->items[i].key = strcpy((char *)ptr, items[i].key);
-    ptr += strlen(items[i].key) + 1;
+    ptr += strlen(items[i].key) + NUL_TERM_LEN;
     dict->items[i].value = strcpy((char *)ptr, items[i].value);
-    ptr += strlen(items[i].value) + 1;
+    ptr += strlen(items[i].value) + NUL_TERM_LEN;
   }
 
   if (dict->count != 3) {

@@ -9,6 +9,12 @@
 
 #include "util.h"
 
+#ifndef NUL_TERM_LEN
+/* Size of a NUL-termination byte. Generally useful for documenting the meaning
+ * of +1 and -1 length adjustments having to do with such bytes. */
+#define NUL_TERM_LEN 1 /*  sizeof('\0') */
+#endif                 /* NUL_TERM_LEN */
+
 /* https://stackoverflow.com/a/10966395 */
 #define GENERATE_ENUM(ENUM) ENUM,
 #define GENERATE_STRING(STRING) #STRING,
@@ -66,15 +72,15 @@ Card *decodeCard(const char *str) {
 
     /* compute size for the target struct */
     size = sizeof(Card);
-    size += json_string_length(json_name) + 1;
+    size += json_string_length(json_name) + NUL_TERM_LEN;
     if (json_dict) {
       const char *key;
       json_t *value;
       size += sizeof(StringPairList);
       json_object_foreach(json_dict, key, value) {
         size += sizeof(StringPair);
-        size += strlen(key) + 1;
-        size += json_string_length(value) + 1;
+        size += strlen(key) + NUL_TERM_LEN;
+        size += json_string_length(value) + NUL_TERM_LEN;
       }
     }
 
@@ -84,7 +90,7 @@ Card *decodeCard(const char *str) {
 
     ptr += sizeof(Card);
     card->name = strcpy((char *)ptr, json_string_value(json_name));
-    ptr += json_string_length(json_name) + 1;
+    ptr += json_string_length(json_name) + NUL_TERM_LEN;
     card->type = indexOf(CARD_TYPE_STRING,
                          sizeof(CARD_TYPE_STRING) / sizeof(*CARD_TYPE_STRING),
                          json_string_value(json_type));
@@ -99,10 +105,10 @@ Card *decodeCard(const char *str) {
       json_object_foreach(json_dict, key, value) {
         ptr += sizeof(StringPair);
         card->dict.items[i].key = strcpy((char *)ptr, key);
-        ptr += strlen(key) + 1;
+        ptr += strlen(key) + NUL_TERM_LEN;
         card->dict.items[i].value =
             strcpy((char *)ptr, json_string_value(value));
-        ptr += json_string_length(value) + 1;
+        ptr += json_string_length(value) + NUL_TERM_LEN;
         i++;
       }
       json_decref(value);
